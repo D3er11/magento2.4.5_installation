@@ -36,3 +36,107 @@ php8.1-zip \
 php8.1-libxml \
 php8.1-openssl \
               --yes
+
+
+php --ini | grep "Loaded Configuration File"
+NOTE
+If you have only one php.ini file, make the changes in that file. If you have two php.ini files, make the changes in all files. Failure to do so might cause unpredictable performance.
+Find OPcache configuration settings
+PHP OPcache settings are typically located either in php.ini or opcache.ini. The location might depend on your operating system and PHP version. The OPcache configuration file might have an opcache section or settings like opcache.enable.
+
+Use the following guidelines to find it:
+
+Apache web server:
+
+For Ubuntu with Apache, OPcache settings are typically located in the php.ini file.
+
+For CentOS with Apache or nginx, OPcache settings are typically located in /etc/php.d/opcache.ini
+
+If not, use the following command to locate it:
+
+sudo find / -name 'opcache.ini'
+nginx web server with PHP-FPM: /etc/php/7.2/fpm/php.ini
+
+If you have more than one opcache.ini, modify all of them.
+
+
+
+vi /etc/php/8.1/cli/php.ini                   ?
+vi /etc/php/8.1/fpm/php.ini                   ?
+opcache.memory_consumption=128
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=4000
+opcache.revalidate_freq=60
+opcache.fast_shutdown=1                       ?
+opcache.enable_cli=1
+opcache.save_comments=1
+realpath_cache_size=10M
+realpath_cache_ttl=7200
+memory_limit=2G
+date.timezone = America/New_York
+
+
+awk '/opcache.memory_consumption|opcache.interned_strings_buffer|opcache.revalidate_freq|opcache.max_accelerated_files|opcache.fast_shutdown|opcache.enable_cli/' /etc/php/8.1/fpm/php.ini
+awk '/opcache.memory_consumption|opcache.interned_strings_buffer|opcache.revalidate_freq|opcache.max_accelerated_files|opcache.fast_shutdown|opcache.enable_cli/' /etc/php/8.1/cli/php.ini
+sudo systemctl restart php8.1-fpm.service 
+sudo systemctl restart nginx
+
+PHPUnit                                         ?
+PHPUnit (as a command-line tool) 9.0.0
+
+Xdebug                                           ?
+
+SSL certificate:
+install snapd
+sudo snap install core; sudo snap refresh core
+sudo apt-get remove certbot
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+sudo certbot --nginx
+sudo certbot renew --dry-run
+
+sudo apt install -y mysql-server
+
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'rootpass';
+exit;
+
+mysql -u root -p
+SELECT user,authentication_string,plugin,host FROM mysql.user;
+CREATE USER 'magento2'@'localhost' IDENTIFIED BY 'Passwor8';
+ALTER USER 'magento2'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Passwor8';
+!!! ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'
+GRANT ALL PRIVILEGES ON testserv6.* TO 'magento2'@'localhost' WITH GRANT OPTION;
+flush privileges;
+exit;
+
+mysql -u magento2 -p
+CREATE DATABASE magento2;
+exit;
+
+
+create database magento;
+create user 'magento'@'localhost' IDENTIFIED BY 'magento';
+GRANT ALL ON magento.* TO 'magento'@'localhost';
+flush privileges;
+exit;
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+sudo mv composer.phar /usr/local/bin/composer
+
+composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.3.5 /var/www/magento
+find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
+
+find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
+
+chown -R :www-data . # Ubuntu
+
+chmod u+x bin/magento
+
+Public Key: 68963e1caa917f788182766e6fd02d25
+Private Key: 0119bf97b9c142b6adb23865dbf4b2ad
+
+
+
