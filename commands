@@ -3,9 +3,10 @@ apt update
 sudo apt -y install nginx
 
 sudo apt install -y software-properties-common 
-sudo add-apt-repository ppa:ondrej/php
+sudo apt-add-repository ppa:ondrej/php -y
 sudo apt-get update
 
+### Install php
 apt-get -y install php8.1-fpm php8.1-cli
 apt install php8.1-mysql
 apt-get -y install php8.1-bcmath \
@@ -36,7 +37,9 @@ php8.1-zip \
 php8.1-libxml \
 php8.1-openssl \
               --yes
-
+              
+apt install -y php8.1-cli php8.1-dev php8.1-pgsql php8.1-sqlite3 php8.1-gd php8.1-curl php8.1-memcached php8.1-imap php8.1-mysql php8.1-mbstring php8.1-xml php8.1-imagick php8.1-zip php8.1-bcmath php8.1-soap php8.1-intl php8.1-readline php8.1-common php8.1-pspell php8.1-tidy php8.1-xsl php8.1-opcache php8.1-apcu
+###
 
 php --ini | grep "Loaded Configuration File"
 NOTE
@@ -45,24 +48,20 @@ Find OPcache configuration settings
 PHP OPcache settings are typically located either in php.ini or opcache.ini. The location might depend on your operating system and PHP version. The OPcache configuration file might have an opcache section or settings like opcache.enable.
 
 Use the following guidelines to find it:
-
 Apache web server:
-
 For Ubuntu with Apache, OPcache settings are typically located in the php.ini file.
-
 For CentOS with Apache or nginx, OPcache settings are typically located in /etc/php.d/opcache.ini
 
 If not, use the following command to locate it:
-
 sudo find / -name 'opcache.ini'
-nginx web server with PHP-FPM: /etc/php/7.2/fpm/php.ini
 
+nginx web server with PHP-FPM: /etc/php/7.2/fpm/php.ini
 If you have more than one opcache.ini, modify all of them.
 
 
 
-vi /etc/php/8.1/cli/php.ini                   ?
-vi /etc/php/8.1/fpm/php.ini                   ?
+vi /etc/php/8.1/cli/php.ini                 
+vi /etc/php/8.1/fpm/php.ini                  
 opcache.memory_consumption=128
 opcache.interned_strings_buffer=8
 opcache.max_accelerated_files=4000
@@ -75,18 +74,51 @@ realpath_cache_ttl=7200
 memory_limit=2G
 date.timezone = America/New_York
 
+sed -i "s/;realpath_cache_size = .*/realpath_cache_size=10M/" /etc/php/8.1/fpm/php.ini
+sed -i "s/;realpath_cache_ttl = .*/realpath_cache_ttl=7200/"  /etc/php/8.1/fpm/php.ini
+sed -i "s/memory_limit = .*/memory_limit=2G/"                 /etc/php/8.1/fpm/php.ini
+sed -i "s/;realpath_cache_size = .*/realpath_cache_size=10M/" /etc/php/8.1/cli/php.ini
+sed -i "s/;realpath_cache_ttl = .*/realpath_cache_ttl=7200/"  /etc/php/8.1/cli/php.ini
+sed -i "s/memory_limit = .*/memory_limit=2G/"                 /etc/php/8.1/cli/php.ini
+
+sed -i "s/error_reporting = .*/error_reporting = E_ALL/"  /etc/php/8.1/cli/php.ini
+sed -i "s/display_errors = .*/display_errors = On/"       /etc/php/8.1/cli/php.ini
+sed -i "s/;date.timezone.*/date.timezone = UTC/"          /etc/php/8.1/cli/php.ini
+sed -i "s/error_reporting = .*/error_reporting = E_ALL \& ~E_NOTICE \& ~E_STRICT \& ~E_DEPRECATED/" /etc/php/8.1/fpm/php.ini
+sed -i "s/display_errors = .*/display_errors = Off/" /etc/php/8.1/fpm/php.ini
+sed -i "s/upload_max_filesize = .*/upload_max_filesize = 256M/" /etc/php/8.1/fpm/php.ini
+sed -i "s/post_max_size = .*/post_max_size = 256M/" /etc/php/8.1/fpm/php.ini
+sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php/8.1/fpm/php.ini
+sed -i "s/;listen\.mode =.*/listen.mode = 0666/" /etc/php/8.1/fpm/pool.d/www.conf
+sed -i "s/;request_terminate_timeout =.*/request_terminate_timeout = 60/" /etc/php/8.1/fpm/pool.d/www.conf
+sed -i "s/pm\.max_children =.*/pm.max_children = 70/" /etc/php/8.1/fpm/pool.d/www.conf
+sed -i "s/pm\.start_servers =.*/pm.start_servers = 20/" /etc/php/8.1/fpm/pool.d/www.conf
+sed -i "s/pm\.min_spare_servers =.*/pm.min_spare_servers = 20/" /etc/php/8.1/fpm/pool.d/www.conf
+sed -i "s/pm\.max_spare_servers =.*/pm.max_spare_servers = 35/" /etc/php/8.1/fpm/pool.d/www.conf
+sed -i "s/;pm\.max_requests =.*/pm.max_requests = 500/" /etc/php/8.1/fpm/pool.d/www.conf
+
+### nginx config
+sed -i "s/worker_processes.*/worker_processes auto;/" /etc/nginx/nginx.conf
+sed -i "s/# multi_accept.*/multi_accept on;/" /etc/nginx/nginx.conf
+sed -i "s/# server_names_hash_bucket_size.*/server_names_hash_bucket_size 128;/" /etc/nginx/nginx.conf
+sed -i "s/# server_tokens off/server_tokens off/" /etc/nginx/nginx.conf
+###
+
 
 awk '/opcache.memory_consumption|opcache.interned_strings_buffer|opcache.revalidate_freq|opcache.max_accelerated_files|opcache.fast_shutdown|opcache.enable_cli/' /etc/php/8.1/fpm/php.ini
 awk '/opcache.memory_consumption|opcache.interned_strings_buffer|opcache.revalidate_freq|opcache.max_accelerated_files|opcache.fast_shutdown|opcache.enable_cli/' /etc/php/8.1/cli/php.ini
 sudo systemctl restart php8.1-fpm.service 
 sudo systemctl restart nginx
 
-PHPUnit                                         ?
-PHPUnit (as a command-line tool) 9.0.0
+Xdebug        pecl install xdebug                  dont need always
 
-Xdebug                                           ?
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+sudo mv composer.phar /usr/local/bin/composer
 
-SSL certificate:
+### Install Letsencrypt Certbot
 install snapd
 sudo snap install core; sudo snap refresh core
 sudo apt-get remove certbot
@@ -94,7 +126,19 @@ sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
 sudo certbot --nginx
 sudo certbot renew --dry-run
+###
 
+
+### Mariadb
+sudo apt-get install apt-transport-https curl
+sudo curl -o /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc 'https://mariadb.org/mariadb_release_signing_key.asc'
+sudo sh -c "echo 'deb https://mirror.ihost.md/mariadb/repo/10.4/ubuntu focal main' >>/etc/apt/sources.list"
+sudo apt-get update
+sudo apt-get install mariadb-server
+mysql_secure_installation               ?
+###
+
+### Mysql
 sudo apt install -y mysql-server
 
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'rootpass';
@@ -119,12 +163,120 @@ create user 'magento'@'localhost' IDENTIFIED BY 'magento';
 GRANT ALL ON magento.* TO 'magento'@'localhost';
 flush privileges;
 exit;
+###
 
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-php composer-setup.php
-php -r "unlink('composer-setup.php');"
-sudo mv composer.phar /usr/local/bin/composer
+
+### PhpMyAdmin
+mkdir -p /var/www/html
+cd /var/www
+composer create-project phpmyadmin/phpmyadmin
+cp /var/www/phpmyadmin/config.sample.inc.php /var/www/phpmyadmin/config.inc.php
+mysql -u root -pYOUR_ROOT_PASSWORD < /var/www/phpmyadmin/sql/create_tables.sql
+sed -i "s/\$cfg\['blowfish_secret'\] = '';.*/\$cfg\['blowfish_secret'\] = '$(uuidgen | tr -d -)';/" /var/www/phpmyadmin/config.inc.php
+mkdir /var/www/phpmyadmin/tmp; chown www-data:www-data /var/www/phpmyadmin/tmp;
+ln -s /var/www/phpmyadmin/ /var/www/html/phpmyadmin;  mkdir /var/www/logs;  chown www-data:www-data /var/www/html; chown www-data:www-data /var/www/logs; chown www-data:www-data /var/www; chmod -R g+rw /var/www;
+###
+
+### Install Redis
+apt install redis-server -y
+sed -i "s/supervised.*/supervised systemd/" /etc/redis/redis.conf
+systemctl restart redis.service
+###
+
+### Nginx
+mkdir /etc/nginx/sites-available; mkdir /etc/nginx/sites-enabled;
+nano /etc/nginx/sites-available/webdock
+
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        root /var/www/html;
+        client_max_body_size 256M;
+
+        # Add index.php to the list if you are using PHP
+        index index.html index.htm index.php;
+
+        #Which domain names will this vhost respond to
+        server_name  _;
+
+        location / {
+            # First attempt to serve request as file, then
+            # as directory, then fall back to displaying a 404.
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location = /favicon.ico { access_log off; log_not_found off; }
+        location = /robots.txt  { access_log off; log_not_found off; }
+        access_log /var/www/logs/access.log;
+        error_log  /var/www/logs/error.log error;
+        error_page 404 /index.php;
+
+        location ~ \.php$ {
+          fastcgi_split_path_info ^(.+\.php)(/.+)$;
+          fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+          fastcgi_index index.php;
+          include fastcgi_params;
+          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+          fastcgi_intercept_errors off;
+          fastcgi_buffer_size 16k;
+          fastcgi_buffers 4 16k;
+          fastcgi_connect_timeout 600;
+          fastcgi_send_timeout 600;
+          fastcgi_read_timeout 600;
+        }
+
+    # Necessary for Let's Encrypt Domain Name ownership validation. Place any other deny rules after this
+    location ~ /.well-known {
+     allow all;
+   }
+
+    # Deny access to .htaccess or .htpasswd files
+    location ~ /\.ht {
+        deny all;
+    }
+
+    # Deny access to any git repository
+    location ~ /\.git {
+        deny all;
+    }
+
+    # Deny access to xmlrpc.php - a common brute force target against Wordpress
+    location = /xmlrpc.php {
+        deny all;
+        access_log off;
+        log_not_found off;
+        return 444;
+    }
+
+
+}
+
+
+rm /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/webdock /etc/nginx/sites-enabled/webdock
+
+
+
+Check that your nginx configuration file has Nginx user set to www-data, gzip on is uncommented and that it is including config files from /etc/nginx/sites-enabled/* (changes in red)
+
+nano /etc/nginx/nginx.conf
+
+...
+
+user  www-data
+
+...
+
+gzip  on;
+
+...
+
+include /etc/nginx/conf.d/*.conf;
+include /etc/nginx/sites-enabled/*;
+###
+
+
 
 composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.3.5 /var/www/magento
 find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
@@ -139,4 +291,37 @@ Public Key: 68963e1caa917f788182766e6fd02d25
 Private Key: 0119bf97b9c142b6adb23865dbf4b2ad
 
 
+###
+Set up logrotate for our Nginx logs
+Execute the following to create log rotation config for Nginx - this gives you 10 days of logs, rotated daily
 
+cat > /etc/logrotate.d/vhost << EOF
+/var/www/logs/*.log {
+ rotate 10
+ daily
+ compress
+ delaycompress
+ sharedscripts
+ 
+ postrotate
+ systemctl reload nginx > /dev/null
+ endscript
+}
+EOF
+Setup unattended security upgrades
+cat > /etc/apt/apt.conf.d/10periodic << EOF
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::AutocleanInterval "7";
+APT::Periodic::Unattended-Upgrade "1";
+EOF
+You can further tweak unattended upgrades if you wish in /etc/apt/apt.conf.d/50unattended-upgrades. The default in Ubuntu is to only install security upgrades automatically.
+
+Restart your server
+Make sure all services come up properly. You can see what services are listening on which ports on your server by running
+
+netstat -tapn
+Congratulations. All services should now come up and you have a production-ready webserver stack running. You can further tune your webserver and PHP-FPM settings based on your use-case (e.g. whether you have a high or low traffic site, mostly serve static or dynamic content etc.). Try Googling "optimize php-fpm" or "optimize apache" for example and pick settings that fit your requirements and chosen Webdock profile. For further tuning of Nginx, you can see our optimization guide.
+
+If you find some optimized defaults you would like us to include in our stacks, please let us know and we will take a look.
+###
