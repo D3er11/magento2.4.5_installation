@@ -10,36 +10,12 @@ sudo apt-get update
 sudo apt-get -y install php8.1-fpm php8.1-cli
 sudo apt install php8.1-mysql
 sudo apt install zip unzip php-zip
-sudo apt-get -y install php8.1-bcmath \
-php8.1-bcmath \
-php8.1-ctype \
-php8.1-curl \
-php8.1-dom \
-php8.1-fileinfo \
-php8.1-gd \
-php8.1-hash \
-php8.1-iconv \
-php8.1-intl \
-php8.1-json \
-php8.1-libxml \
-php8.1-mbstring \
-php8.1-openssl \
-php8.1-pcre \
-php8.1-pdo_mysql \
-php8.1-simplexml \
-php8.1-soap \
-php8.1-sockets \
-php8.1-sodium \
-php8.1-spl \
-php8.1-tokenizer \
-php8.1-xmlwriter \
-php8.1-xsl \
-php8.1-zip \
-php8.1-libxml \
-php8.1-openssl \
-              --yes
+sudo apt-get -y install php8.1-bcmath php8.1-bcmath php8.1-common php8.1-curl php8.1-xml php8.1-common php8.1-gd php8.1-hash php8.1-intl php8.1-libxml php8.1-xml php8.1-mbstring php8.1-openssl php8.1-pcre php8.1-pdo_mysql php8.1-soap php8.1-sodium php8.1-spl php8.1-xsl php8.1-zip php8.1-libxml php8.1-openssl
               
-apt install -y php8.1-cli php8.1-dev php8.1-pgsql php8.1-sqlite3 php8.1-gd php8.1-curl php8.1-memcached php8.1-imap php8.1-mysql php8.1-mbstring php8.1-xml php8.1-imagick php8.1-zip php8.1-bcmath php8.1-soap php8.1-intl php8.1-readline php8.1-common php8.1-pspell php8.1-tidy php8.1-xsl php8.1-opcache php8.1-apcu
+sudo apt install -y php8.1-cli php8.1-dev php8.1-pgsql php8.1-sqlite3 php8.1-gd php8.1-curl php8.1-memcached php8.1-imap php8.1-mysql php8.1-mbstring php8.1-xml php8.1-imagick php8.1-zip php8.1-bcmath php8.1-soap php8.1-intl php8.1-readline php8.1-common php8.1-pspell php8.1-tidy php8.1-xsl php8.1-opcache php8.1-apcu
+
+apt install php8.1-curl
+apt install php8.1-gd
 ###
 
 php --ini | grep "Loaded Configuration File"
@@ -168,7 +144,6 @@ flush privileges;
 exit;
 
 mysql -u magento2 -p
-CREATE DATABASE magento2;
 exit;
 ###
 
@@ -270,6 +245,9 @@ include /etc/nginx/sites-enabled/*;
 
 
 composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.5 /var/www/magento
+
+cd /var/www/html/magento
+
 find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
 
 find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
@@ -282,6 +260,38 @@ Public Key: 68963e1caa917f788182766e6fd02d25
 Private Key: 0119bf97b9c142b6adb23865dbf4b2ad
 
 
+
+### Elasticsearch
+sudo apt install default-jre
+sudo apt install default-jdk
+
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+sudo apt-get install apt-transport-https
+echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+sudo apt-get update && sudo apt-get install elasticsearch
+
+###
+
+bin/magento setup:install \
+--base-url=https://testcomposeralex.aheadworks.com \
+--db-host=localhost \
+--db-name=magento_db \
+--db-user=magento2 \
+--db-password=Passwor8 \
+--admin-firstname=admin \
+--admin-lastname=admin \
+--admin-email=admin@admin.com \
+--admin-user=admin \
+--admin-password=admin123 \
+--language=en_US \
+--currency=USD \
+--timezone=UTC \
+--use-rewrites=1 \
+--search-engine=elasticsearch7 \
+--elasticsearch-host=testcomposeralex.aheadworks.com \
+--elasticsearch-port=9200 \
+--elasticsearch-index-prefix=magento2 \
+--elasticsearch-timeout=15
 
 
 
