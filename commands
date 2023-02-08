@@ -7,9 +7,10 @@ sudo apt-add-repository ppa:ondrej/php -y
 sudo apt-get update
 
 ### Install php
-apt-get -y install php8.1-fpm php8.1-cli
-apt install php8.1-mysql
-apt-get -y install php8.1-bcmath \
+sudo apt-get -y install php8.1-fpm php8.1-cli
+sudo apt install php8.1-mysql
+sudo apt install zip unzip php-zip
+sudo apt-get -y install php8.1-bcmath \
 php8.1-bcmath \
 php8.1-ctype \
 php8.1-curl \
@@ -119,13 +120,25 @@ php -r "unlink('composer-setup.php');"
 sudo mv composer.phar /usr/local/bin/composer
 
 ### Install Letsencrypt Certbot
-install snapd
+sudo apt install snapd
 sudo snap install core; sudo snap refresh core
 sudo apt-get remove certbot
 sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
 sudo certbot --nginx
 sudo certbot renew --dry-run
+###
+
+### Varnish
+sudo apt install debian-archive-keyring curl gnupg apt-transport-https -y
+curl -fsSL https://packagecloud.io/varnishcache/varnish70/gpgkey|sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/varnish.gpg
+. /etc/os-release
+sudo tee /etc/apt/sources.list.d/varnishcache_varnish70.list > /dev/null <<-EOF
+deb https://packagecloud.io/varnishcache/varnish70/$ID/ $VERSION_CODENAME main
+deb-src https://packagecloud.io/varnishcache/varnish70/$ID/ $VERSION_CODENAME main
+EOF
+sudo apt update
+sudo apt install varnish
 ###
 
 
@@ -142,39 +155,21 @@ mysql_secure_installation               ?
 sudo apt install -y mysql-server
 
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'rootpass';
+flush privileges;
 exit;
 
 mysql -u root -p
 SELECT user,authentication_string,plugin,host FROM mysql.user;
+create database magento_db;
 CREATE USER 'magento2'@'localhost' IDENTIFIED BY 'Passwor8';
 ALTER USER 'magento2'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Passwor8';
-!!! ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'
-GRANT ALL PRIVILEGES ON testserv6.* TO 'magento2'@'localhost' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON magento_db.* TO 'magento2'@'localhost';
 flush privileges;
 exit;
 
 mysql -u magento2 -p
 CREATE DATABASE magento2;
 exit;
-
-
-create database magento;
-create user 'magento'@'localhost' IDENTIFIED BY 'magento';
-GRANT ALL ON magento.* TO 'magento'@'localhost';
-flush privileges;
-exit;
-###
-
-
-### PhpMyAdmin
-mkdir -p /var/www/html
-cd /var/www
-composer create-project phpmyadmin/phpmyadmin
-cp /var/www/phpmyadmin/config.sample.inc.php /var/www/phpmyadmin/config.inc.php
-mysql -u root -pYOUR_ROOT_PASSWORD < /var/www/phpmyadmin/sql/create_tables.sql
-sed -i "s/\$cfg\['blowfish_secret'\] = '';.*/\$cfg\['blowfish_secret'\] = '$(uuidgen | tr -d -)';/" /var/www/phpmyadmin/config.inc.php
-mkdir /var/www/phpmyadmin/tmp; chown www-data:www-data /var/www/phpmyadmin/tmp;
-ln -s /var/www/phpmyadmin/ /var/www/html/phpmyadmin;  mkdir /var/www/logs;  chown www-data:www-data /var/www/html; chown www-data:www-data /var/www/logs; chown www-data:www-data /var/www; chmod -R g+rw /var/www;
 ###
 
 ### Install Redis
@@ -184,21 +179,17 @@ systemctl restart redis.service
 ###
 
 ### Nginx
-mkdir /etc/nginx/sites-available; mkdir /etc/nginx/sites-enabled;
-nano /etc/nginx/sites-available/webdock
+mkdir /etc/nginx/sites-available; 
+mkdir /etc/nginx/sites-enabled;
+nano /etc/nginx/sites-available/mysite
 
 server {
         listen 80 default_server;
-        listen [::]:80 default_server;
-
+        server_name  _;
+        
         root /var/www/html;
         client_max_body_size 256M;
-
-        # Add index.php to the list if you are using PHP
-        index index.html index.htm index.php;
-
-        #Which domain names will this vhost respond to
-        server_name  _;
+        index index.html index.php;
 
         location / {
             # First attempt to serve request as file, then
@@ -254,7 +245,7 @@ server {
 
 
 rm /etc/nginx/sites-enabled/default
-ln -s /etc/nginx/sites-available/webdock /etc/nginx/sites-enabled/webdock
+ln -s /etc/nginx/sites-available/mysite /etc/nginx/sites-enabled/mysite
 
 
 
@@ -278,7 +269,7 @@ include /etc/nginx/sites-enabled/*;
 
 
 
-composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.3.5 /var/www/magento
+composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.5 /var/www/magento
 find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} +
 
 find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} +
@@ -289,6 +280,30 @@ chmod u+x bin/magento
 
 Public Key: 68963e1caa917f788182766e6fd02d25
 Private Key: 0119bf97b9c142b6adb23865dbf4b2ad
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ###
@@ -324,4 +339,15 @@ netstat -tapn
 Congratulations. All services should now come up and you have a production-ready webserver stack running. You can further tune your webserver and PHP-FPM settings based on your use-case (e.g. whether you have a high or low traffic site, mostly serve static or dynamic content etc.). Try Googling "optimize php-fpm" or "optimize apache" for example and pick settings that fit your requirements and chosen Webdock profile. For further tuning of Nginx, you can see our optimization guide.
 
 If you find some optimized defaults you would like us to include in our stacks, please let us know and we will take a look.
+###
+
+### PhpMyAdmin
+mkdir -p /var/www/html
+cd /var/www
+composer create-project phpmyadmin/phpmyadmin
+cp /var/www/phpmyadmin/config.sample.inc.php /var/www/phpmyadmin/config.inc.php
+mysql -u root -pYOUR_ROOT_PASSWORD < /var/www/phpmyadmin/sql/create_tables.sql
+sed -i "s/\$cfg\['blowfish_secret'\] = '';.*/\$cfg\['blowfish_secret'\] = '$(uuidgen | tr -d -)';/" /var/www/phpmyadmin/config.inc.php
+mkdir /var/www/phpmyadmin/tmp; chown www-data:www-data /var/www/phpmyadmin/tmp;
+ln -s /var/www/phpmyadmin/ /var/www/html/phpmyadmin;  mkdir /var/www/logs;  chown www-data:www-data /var/www/html; chown www-data:www-data /var/www/logs; chown www-data:www-data /var/www; chmod -R g+rw /var/www;
 ###
