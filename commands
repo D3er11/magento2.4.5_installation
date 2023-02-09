@@ -278,7 +278,7 @@ sudo apt-get update && sudo apt-get install elasticsearch
 ###
 
 bin/magento setup:install \
---base-url=https://testcomposeralex.aheadworks.com \
+--base-url=https://testalex2.aheadworks.com \
 --db-host=localhost \
 --db-name=magento_db \
 --db-user=magento2 \
