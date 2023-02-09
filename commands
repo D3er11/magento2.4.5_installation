@@ -127,7 +127,7 @@ sudo apt-get install mariadb-server
 mysql_secure_installation               ?
 ###
 
-### Mysql
+### Mysql check for 8.0 or mariadb 10.4!
 sudo apt install -y mysql-server
 
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'rootpass';
