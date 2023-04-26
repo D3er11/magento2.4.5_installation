@@ -1,6 +1,8 @@
 sudo apt update
 
+
 sudo apt -y install nginx
+
 
 sudo apt install -y software-properties-common 
 sudo apt-add-repository ppa:ondrej/php -y
@@ -119,12 +121,12 @@ sudo apt install varnish
 
 
 ### Mariadb
-sudo apt-get install apt-transport-https curl
+sudo apt-get install -y apt-transport-https curl
 sudo curl -o /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc 'https://mariadb.org/mariadb_release_signing_key.asc'
 sudo sh -c "echo 'deb https://mirror.ihost.md/mariadb/repo/10.4/ubuntu focal main' >>/etc/apt/sources.list"
 sudo apt-get update
-sudo apt-get install mariadb-server
-mysql_secure_installation               ?
+sudo apt-get install -y mariadb-server
+sudo mysql_secure_installation               ?
 ###
 
 ### Mysql check for 8.0 or mariadb 10.4!
@@ -137,9 +139,9 @@ exit;
 mysql -u root -p
 SELECT user,authentication_string,plugin,host FROM mysql.user;
 create database magento_db;
-CREATE USER 'magento2'@'localhost' IDENTIFIED BY 'Passwor8';
-ALTER USER 'magento2'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Passwor8';
-GRANT ALL PRIVILEGES ON magento_db.* TO 'magento2'@'localhost';
+CREATE USER 'magento2'@'%' IDENTIFIED BY 'Passwor8';
+ALTER USER 'magento2'@'%' IDENTIFIED WITH mysql_native_password BY 'Passwor8';
+GRANT ALL PRIVILEGES ON magento_db.* TO 'magento2'@'%';
 flush privileges;
 exit;
 
@@ -154,8 +156,8 @@ systemctl restart redis.service
 ###
 
 ### Nginx
-mkdir /etc/nginx/sites-available; 
-mkdir /etc/nginx/sites-enabled;
+mkdir /etc/nginx/sites-available 
+mkdir /etc/nginx/sites-enabled
 nano /etc/nginx/sites-available/mysite
 
 server {
@@ -262,8 +264,8 @@ Private Key: 0119bf97b9c142b6adb23865dbf4b2ad
 
 
 ### Elasticsearch
-sudo apt install default-jre
-sudo apt install default-jdk
+sudo apt install -y default-jre
+sudo apt install -y default-jdk
 
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
 sudo apt-get install apt-transport-https
@@ -281,7 +283,7 @@ bin/magento setup:install \
 --base-url=https://testalex2.aheadworks.com \
 --db-host=localhost \
 --db-name=magento_db \
---db-user=magento2 \
+--db-user=magento666 \
 --db-password=Passwor8 \
 --admin-firstname=admin \
 --admin-lastname=admin \
@@ -292,7 +294,7 @@ bin/magento setup:install \
 --currency=USD \
 --timezone=UTC \
 --use-rewrites=1 \
---search-engine=elasticsearch7 \
+--search-engine=elasticsearch8 \
 --elasticsearch-host=localhost \
 --elasticsearch-port=9200 \
 --elasticsearch-index-prefix=magento2 \
