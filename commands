@@ -334,6 +334,9 @@ server {
 bin/magento deploy:mode:show
 bin/magento deploy:mode:set developer
 
+bin/magento module:disable Magento_AdminAdobeImsTwoFactorAuth
+bin/magento module:disable Magento_TwoFactorAuth
+
 
 bin/magento sampledata:deploy
 
