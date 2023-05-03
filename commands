@@ -120,16 +120,17 @@ sudo apt install varnish
 ###
 
 
-### Mariadb
+### magento 2.4.6 require mariadb 10.6 or mysql 8.0
+# Mariadb
 sudo apt-get install -y apt-transport-https curl
 sudo curl -o /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc 'https://mariadb.org/mariadb_release_signing_key.asc'
-sudo sh -c "echo 'deb https://mirror.ihost.md/mariadb/repo/10.4/ubuntu focal main' >>/etc/apt/sources.list"
+sudo sh -c "echo 'deb https://mirror.ihost.md/mariadb/repo/10.6/ubuntu focal main' >>/etc/apt/sources.list"
 sudo apt-get update
 sudo apt-get install -y mariadb-server
 sudo mysql_secure_installation               ?
 ###
 
-### Mysql check for 8.0 or mariadb 10.4!
+# Mysql
 sudo apt install -y mysql-server
 
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'rootpass';
@@ -270,7 +271,10 @@ sudo apt install -y default-jdk
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
 sudo apt-get install apt-transport-https
 echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
-sudo apt-get update && sudo apt-get install elasticsearch
+# magento 2.4.6 require version 7.17 or 8.4
+sudo apt-get update && sudo apt-get install elasticsearch=8.4.3
+
+## switch from true to false all ssl parameters in   vi /etc/elasticsearch/elasticsearch.yml     to allow magento connect 
 
  sudo systemctl daemon-reload
  sudo systemctl enable elasticsearch.service
@@ -280,10 +284,11 @@ sudo apt-get update && sudo apt-get install elasticsearch
 ###
 
 bin/magento setup:install \
---base-url=https://testalex2.aheadworks.com \
+--base-url=http://testalex.aheadworks.com \
+--base-url-secure=https://testalex.aheadworks.com \
 --db-host=localhost \
 --db-name=magento_db \
---db-user=magento666 \
+--db-user=magento2 \
 --db-password=Passwor8 \
 --admin-firstname=admin \
 --admin-lastname=admin \
@@ -305,15 +310,15 @@ bin/magento setup:install \
 
 ### Nginx
 upstream fastcgi_backend {
-  server  unix:/run/php/php7.2-fpm.sock;
+  server  unix:/run/php/php8.1-fpm.sock;
 }
 
 server {
 
   listen 80;
-  server_name www.magento-dev.com;
-  set $MAGE_ROOT /var/www/html/magento2;
-  include /var/www/html/magento2/nginx.conf.sample;
+  server_name walextest.aheadworks.com;
+  set $MAGE_ROOT /var/www/magento;
+  include /var/www/magento/nginx.conf.sample;
 }
 
 ###
