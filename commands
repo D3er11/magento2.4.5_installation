@@ -357,6 +357,14 @@ bin/magento setup:upgrade
 
 
 ###
+bin/magento setup:store-config:set --base-url=http://testalex.aheadworks.com/
+bin/magento setup:store-config:set --base-url-secure=https://testalex.aheadworks.com/
+
+Mysql check 
+use database;
+SELECT * FROM core_config_data;
+
+
 Set up logrotate for our Nginx logs
 Execute the following to create log rotation config for Nginx - this gives you 10 days of logs, rotated daily
 
