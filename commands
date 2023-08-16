@@ -272,8 +272,7 @@ Private Key: 0119bf97b9c142b6adb23865dbf4b2ad
 
 
 ### Elasticsearch
-sudo apt install -y default-jre
-sudo apt install -y default-jdk
+sudo apt install -y default-jre default-jdk
 
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
 sudo apt-get install apt-transport-https
